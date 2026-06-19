@@ -1368,7 +1368,7 @@ function recalcScores() {
       const resultado = (v * c.weight) / 100;
       quantSum += resultado;
       quantFilled++;
-      calc.textContent = resultado.toFixed(3);
+      calc.textContent = resultado.toFixed(2);
       calc.classList.add('has-value');
     } else {
       calc.textContent = '—';
@@ -1385,7 +1385,7 @@ function recalcScores() {
       const resultado = (v * c.weight) / 100;
       qualSum += resultado;
       qualFilled++;
-      calc.textContent = resultado.toFixed(3);
+      calc.textContent = resultado.toFixed(2);
       calc.classList.add('has-value');
     } else {
       calc.textContent = '—';
@@ -1401,15 +1401,15 @@ function recalcScores() {
   const dql = document.getElementById('displayQual');
   const df  = document.getElementById('displayFinal');
 
-  if (quantReady) { dq.textContent = quantSum.toFixed(3); dq.classList.add('filled'); }
+  if (quantReady) { dq.textContent = quantSum.toFixed(2); dq.classList.add('filled'); }
   else { dq.textContent = '—'; dq.classList.remove('filled'); }
 
-  if (qualReady) { dql.textContent = qualSum.toFixed(3); dql.classList.add('filled'); }
+  if (qualReady) { dql.textContent = qualSum.toFixed(2); dql.classList.add('filled'); }
   else { dql.textContent = '—'; dql.classList.remove('filled'); }
 
   if (quantReady && qualReady) {
-    const final = Math.min(10, parseFloat((quantSum + qualSum).toFixed(3)));
-    df.textContent = final.toFixed(3);
+    const final = Math.min(10, parseFloat((quantSum + qualSum).toFixed(2)));
+    df.textContent = final.toFixed(2);
     df.classList.add('filled');
   } else {
     df.textContent = '—';
@@ -1458,7 +1458,7 @@ async function submitEvaluation() {
     qualSum += (v * c.weight) / 100;
   }
   // Score Final = soma direta de todos os resultados (nota × peso)
-  const finalScore = Math.min(10, parseFloat((quantSum + qualSum).toFixed(3)));
+  const finalScore = Math.min(10, parseFloat((quantSum + qualSum).toFixed(2)));
 
   const btn = document.getElementById('btnSubmit');
   btn.disabled = true;
@@ -1480,8 +1480,8 @@ async function submitEvaluation() {
       qual_sell_out:       qlScores.sell_out,
       qual_chao_loja:      qlScores.chao_loja,
       qual_sell_out_rel:   qlScores.sell_out_rel,
-      quantitative_score:  parseFloat(quantSum.toFixed(3)),
-      qualitative_score:   parseFloat(qualSum.toFixed(3)),
+      quantitative_score:  parseFloat(quantSum.toFixed(2)),
+      qualitative_score:   parseFloat(qualSum.toFixed(2)),
       final_score:         finalScore,
       observations:        obs || null,
     };
@@ -2002,9 +2002,9 @@ CREATE TABLE scorecard_evaluations (
   qual_chao_loja       DECIMAL(4,1) NOT NULL CHECK (qual_chao_loja     BETWEEN 0 AND 10),
   qual_sell_out_rel    DECIMAL(4,1) NOT NULL CHECK (qual_sell_out_rel  BETWEEN 0 AND 10),
   -- Scores calculados
-  quantitative_score   DECIMAL(5,3) NOT NULL,
-  qualitative_score    DECIMAL(5,3) NOT NULL,
-  final_score          DECIMAL(5,3) NOT NULL,
+  quantitative_score   DECIMAL(5,2) NOT NULL,
+  qualitative_score    DECIMAL(5,2) NOT NULL,
+  final_score          DECIMAL(5,2) NOT NULL,
   observations         TEXT,
   submitted_at         TIMESTAMPTZ  DEFAULT NOW()
 );
