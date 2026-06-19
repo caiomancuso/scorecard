@@ -274,7 +274,7 @@
     justify-content: flex-end;
   }
   .score-input {
-    width: 64px !important;
+    width: 72px !important;
     text-align: center;
     font-size: 16px !important;
     font-weight: 700;
@@ -1341,7 +1341,7 @@ function renderCriteriaTable(tbodyId, criteria, prefix) {
             type="number"
             class="score-input"
             id="${prefix}_${c.id}"
-            min="0" max="10" step="1"
+            min="0" max="10" step="0.1"
             placeholder="—"
             oninput="recalcScores()"
           >
@@ -1711,7 +1711,7 @@ function openDetail(idx) {
           <div>
             <div class="modal-criteria-name">${c.name}</div>
           </div>
-          <div class="modal-criteria-score">${r['quant_'+c.id] ?? '—'}</div>
+          <div class="modal-criteria-score">${r['quant_'+c.id] != null ? parseFloat(r['quant_'+c.id]).toFixed(1) : '—'}</div>
         </div>
       `).join('')}
     </div>
@@ -1723,7 +1723,7 @@ function openDetail(idx) {
           <div>
             <div class="modal-criteria-name">${c.name}</div>
           </div>
-          <div class="modal-criteria-score">${r['qual_'+c.id] ?? '—'}</div>
+          <div class="modal-criteria-score">${r['qual_'+c.id] != null ? parseFloat(r['qual_'+c.id]).toFixed(1) : '—'}</div>
         </div>
       `).join('')}
     </div>
@@ -1785,7 +1785,7 @@ function buildEvalHTML(r) {
         ${QUANT_CRITERIA.map(c => `
           <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid #F5F5F5;">
             <div style="font-size:12px;color:#1A1A1A;">${c.name}</div>
-            <div style="font-size:14px;font-weight:700;color:#C8102E;">${r['quant_'+c.id] ?? '—'}</div>
+            <div style="font-size:14px;font-weight:700;color:#C8102E;">${r['quant_'+c.id] != null ? parseFloat(r['quant_'+c.id]).toFixed(1) : '—'}</div>
           </div>
         `).join('')}
       </div>
@@ -1795,7 +1795,7 @@ function buildEvalHTML(r) {
         ${QUAL_CRITERIA.map(c => `
           <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid #F5F5F5;">
             <div style="font-size:12px;color:#1A1A1A;">${c.name}</div>
-            <div style="font-size:14px;font-weight:700;color:#C8102E;">${r['qual_'+c.id] ?? '—'}</div>
+            <div style="font-size:14px;font-weight:700;color:#C8102E;">${r['qual_'+c.id] != null ? parseFloat(r['qual_'+c.id]).toFixed(1) : '—'}</div>
           </div>
         `).join('')}
       </div>
@@ -1995,16 +1995,16 @@ CREATE TABLE scorecard_evaluations (
   period              VARCHAR(2) NOT NULL CHECK (period IN ('Q1','Q2','Q3','Q4')),
   canal               VARCHAR(50),
   year                INT NOT NULL DEFAULT 2026,
-  quant_vendas        SMALLINT NOT NULL CHECK (quant_vendas BETWEEN 0 AND 10),
-  quant_metas         SMALLINT NOT NULL CHECK (quant_metas BETWEEN 0 AND 10),
-  quant_visitas       SMALLINT NOT NULL CHECK (quant_visitas BETWEEN 0 AND 10),
-  quant_ticket        SMALLINT NOT NULL CHECK (quant_ticket BETWEEN 0 AND 10),
-  qual_comunicacao    SMALLINT NOT NULL CHECK (qual_comunicacao BETWEEN 0 AND 10),
-  qual_atitude        SMALLINT NOT NULL CHECK (qual_atitude BETWEEN 0 AND 10),
-  qual_conhecimento   SMALLINT NOT NULL CHECK (qual_conhecimento BETWEEN 0 AND 10),
+  quant_vendas        DECIMAL(4,1) NOT NULL CHECK (quant_vendas BETWEEN 0 AND 10),
+  quant_metas         DECIMAL(4,1) NOT NULL CHECK (quant_metas BETWEEN 0 AND 10),
+  quant_visitas       DECIMAL(4,1) NOT NULL CHECK (quant_visitas BETWEEN 0 AND 10),
+  quant_ticket        DECIMAL(4,1) NOT NULL CHECK (quant_ticket BETWEEN 0 AND 10),
+  qual_comunicacao    DECIMAL(4,1) NOT NULL CHECK (qual_comunicacao BETWEEN 0 AND 10),
+  qual_atitude        DECIMAL(4,1) NOT NULL CHECK (qual_atitude BETWEEN 0 AND 10),
+  qual_conhecimento   DECIMAL(4,1) NOT NULL CHECK (qual_conhecimento BETWEEN 0 AND 10),
   quantitative_score  DECIMAL(5,2) NOT NULL,
   qualitative_score   DECIMAL(5,2) NOT NULL,
-  final_score         SMALLINT NOT NULL,
+  final_score         INT          NOT NULL,
   observations        TEXT,
   submitted_at        TIMESTAMPTZ DEFAULT NOW()
 );
