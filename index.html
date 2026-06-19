@@ -1198,7 +1198,11 @@ async function supabase(method, table, body, query) {
     body: body ? JSON.stringify(body) : undefined,
   });
   const text = await res.text();
-  if (!res.ok) throw new Error(text || res.statusText);
+  if (!res.ok) {
+    // Logar detalhes no console para diagnóstico
+    console.error(`Supabase ${method} ${table} → HTTP ${res.status}:`, text);
+    throw new Error(text || res.statusText);
+  }
   return text ? JSON.parse(text) : null;
 }
 
@@ -1364,8 +1368,15 @@ async function submitEvaluation() {
     showToast('success', '✓', `Avaliação salva. Score final: ${finalScore}`);
     resetForm();
   } catch(e) {
-    console.error(e);
-    showToast('error', '✕', 'Erro ao salvar. Verifique as credenciais e a tabela no Supabase.');
+    console.error('Erro ao salvar:', e);
+    let msg = 'Erro ao salvar.';
+    try {
+      const parsed = JSON.parse(e.message);
+      if (parsed.message) msg = parsed.message;
+      else if (parsed.hint)  msg = parsed.hint;
+      else msg = e.message;
+    } catch { msg = e.message || msg; }
+    showToast('error', '✕', msg.slice(0, 120));
   } finally {
     btn.disabled = false;
     btn.textContent = 'Salvar Avaliação';
@@ -1461,8 +1472,9 @@ async function loadAdminData() {
     renderTable(allEvaluations);
     renderMetrics(allEvaluations);
   } catch(e) {
-    console.error(e);
-    document.getElementById('tableBody').innerHTML = `<div class="table-empty">Erro ao carregar dados. Verifique se a tabela <strong>scorecard_evaluations</strong> existe no Supabase.</div>`;
+    console.error('Erro ao carregar:', e);
+    let msg = e.message || 'Erro desconhecido';
+    document.getElementById('tableBody').innerHTML = `<div class="table-empty">Erro ao carregar dados.<br><small style="color:var(--text-dim);font-family:monospace">${msg}</small><br><br>Verifique se a tabela <strong>scorecard_evaluations</strong> existe e se as policies RLS estão ativas.</div>`;
     renderMetrics([]);
   }
 }
