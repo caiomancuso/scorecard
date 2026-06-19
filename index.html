@@ -1045,7 +1045,7 @@
           <tr>
             <th>Critério</th>
             <th>Peso</th>
-            <th style="text-align:right">Nota (0–10)</th>
+            <th style="text-align:right; min-width:120px">Nota (0–10) &nbsp;·&nbsp; Resultado</th>
           </tr>
         </thead>
         <tbody id="quantBody">
@@ -1066,7 +1066,7 @@
           <tr>
             <th>Critério</th>
             <th>Peso</th>
-            <th style="text-align:right">Nota (0–10)</th>
+            <th style="text-align:right; min-width:120px">Nota (0–10) &nbsp;·&nbsp; Resultado</th>
           </tr>
         </thead>
         <tbody id="qualBody">
@@ -1092,15 +1092,15 @@
     <!-- SCORE SUMMARY -->
     <div class="score-bar">
       <div class="score-bar-item">
-        <div class="score-bar-label">Quantitativo (70%)</div>
+        <div class="score-bar-label">Subtotal Quantitativo</div>
         <div class="score-bar-value" id="displayQuant">—</div>
       </div>
       <div class="score-bar-item">
-        <div class="score-bar-label">Qualitativo (30%)</div>
+        <div class="score-bar-label">Subtotal Qualitativo</div>
         <div class="score-bar-value" id="displayQual">—</div>
       </div>
       <div class="score-bar-item">
-        <div class="score-bar-label">Score Final</div>
+        <div class="score-bar-label">Score Final (0–10)</div>
         <div class="score-bar-value final" id="displayFinal">—</div>
       </div>
     </div>
@@ -1259,15 +1259,18 @@
 // CONFIG · CRITÉRIOS
 // ─────────────────────────────────────────────
 const QUANT_CRITERIA = [
-  { id: 'vendas',    name: 'Vendas Realizadas',   desc: 'Volume de vendas atingido no período',  weight: 20 },
-  { id: 'metas',     name: 'Cumprimento de Metas', desc: 'Percentual de meta alcançado',          weight: 20 },
-  { id: 'visitas',   name: 'Frequência de Visitas',desc: 'Número de visitas aos clientes',        weight: 20 },
-  { id: 'ticket',    name: 'Ticket Médio',          desc: 'Valor médio das transações',            weight: 20 },
+  { id: 'crescimento',  name: 'Crescimento',          desc: 'Crescimento do período x período do ano anterior',                weight: 20 },
+  { id: 'faturamento',  name: 'Valor de Faturamento', desc: 'Atingimento da meta em valor',                                    weight: 20 },
+  { id: 'positivacao',  name: 'Positivação',           desc: '% de clientes ativos',                                            weight: 15 },
+  { id: 'mix',          name: 'MIX',                   desc: '≥50% Faturamento em categorias exceto Pó / AOX / Yamasterol',    weight: 10 },
+  { id: 'faseamento',   name: 'Faseamento',            desc: '70% da meta digitada até dia 10',                                 weight: 5  },
 ];
 const QUAL_CRITERIA = [
-  { id: 'comunicacao', name: 'Comunicação e Relacionamento', desc: 'Qualidade da comunicação com clientes e equipe', weight: 10 },
-  { id: 'atitude',     name: 'Atitude e Comprometimento',    desc: 'Demonstração de compromisso com os objetivos',   weight: 10 },
-  { id: 'conhecimento',name: 'Conhecimento de Produtos',     desc: 'Domínio das características e benefícios',       weight: 10 },
+  { id: 'reunioes',     name: 'Participação em Reuniões',          desc: 'Presença e engajamento',                                                     weight: 10 },
+  { id: 'boas_praticas',name: 'Boas Práticas Compartilhadas',      desc: 'Colaboração no mês',                                                          weight: 5  },
+  { id: 'sell_out',     name: 'Ações de Sell Out',                 desc: 'Execução no PDV',                                                             weight: 5  },
+  { id: 'chao_loja',    name: 'Conhecimento de Chão de Loja',      desc: 'Execução e domínio de PDV',                                                   weight: 5  },
+  { id: 'sell_out_rel', name: 'Acompanhamento Nível de Sell-out',  desc: 'Compartilhamento de Relatório de Sell-out dos Principais Clientes',           weight: 5  },
 ];
 
 // Soma dos pesos de cada bloco — escopo global para uso em recalcScores e submitEvaluation
@@ -1441,9 +1444,6 @@ async function submitEvaluation() {
     qScores[c.id] = v;
     quantSum += (v * c.weight) / 100;
   }
-  // Divide pela soma real dos pesos do bloco (não por 0.7 hardcoded)
-  const quantMean = quantSum / (QUANT_WEIGHT_TOTAL / 100);
-
   // coleta scores qual
   let qualSum = 0;
   const qlScores = {};
@@ -1456,8 +1456,8 @@ async function submitEvaluation() {
     qlScores[c.id] = v;
     qualSum += (v * c.weight) / 100;
   }
-  const qualMean = qualSum / (QUAL_WEIGHT_TOTAL / 100);
-  const finalScore = Math.min(10, Math.round((quantMean * 0.70) + (qualMean * 0.30)));
+  // Score Final = soma direta de todos os resultados (nota × peso)
+  const finalScore = Math.min(10, parseFloat((quantSum + qualSum).toFixed(3)));
 
   const btn = document.getElementById('btnSubmit');
   btn.disabled = true;
@@ -1465,35 +1465,29 @@ async function submitEvaluation() {
 
   try {
     const payload = {
-      manager_name:       manager,
+      manager_name:        manager,
       representative_name: rep,
       period,
       year,
-      quant_vendas:        qScores.vendas,
-      quant_metas:         qScores.metas,
-      quant_visitas:       qScores.visitas,
-      quant_ticket:        qScores.ticket,
-      qual_comunicacao:    qlScores.comunicacao,
-      qual_atitude:        qlScores.atitude,
-      qual_conhecimento:   qlScores.conhecimento,
-      quantitative_score:  parseFloat(quantMean.toFixed(2)),
-      qualitative_score:   parseFloat(qualMean.toFixed(2)),
+      quant_crescimento:   qScores.crescimento,
+      quant_faturamento:   qScores.faturamento,
+      quant_positivacao:   qScores.positivacao,
+      quant_mix:           qScores.mix,
+      quant_faseamento:    qScores.faseamento,
+      qual_reunioes:       qlScores.reunioes,
+      qual_boas_praticas:  qlScores.boas_praticas,
+      qual_sell_out:       qlScores.sell_out,
+      qual_chao_loja:      qlScores.chao_loja,
+      qual_sell_out_rel:   qlScores.sell_out_rel,
+      quantitative_score:  parseFloat(quantSum.toFixed(3)),
+      qualitative_score:   parseFloat(qualSum.toFixed(3)),
       final_score:         finalScore,
       observations:        obs || null,
     };
     await supabase('POST', 'scorecard_evaluations', payload);
     showToast('success', '✓', `Avaliação salva. Score final: ${finalScore}`);
     // Guardar dados para oferecer PDF
-    lastSavedEvaluation = {
-      ...payload,
-      quant_vendas:      qScores.vendas,
-      quant_metas:       qScores.metas,
-      quant_visitas:     qScores.visitas,
-      quant_ticket:      qScores.ticket,
-      qual_comunicacao:  qlScores.comunicacao,
-      qual_atitude:      qlScores.atitude,
-      qual_conhecimento: qlScores.conhecimento,
-    };
+    lastSavedEvaluation = { ...payload };
     resetForm();
     setTimeout(() => openPdfModal(lastSavedEvaluation), 600);
   } catch(e) {
@@ -1937,14 +1931,14 @@ function exportCSV() {
 
   const headers = [
     'Representante','Gerente','Período','Ano',
-    'Vendas','Metas','Visitas','Ticket',
-    'Comunicação','Atitude','Conhecimento',
-    'Score Quant.','Score Qual.','Score Final','Observações','Data'
+    'Crescimento','Faturamento','Positivação','MIX','Faseamento',
+    'Reuniões','Boas Práticas','Sell Out','Chão de Loja','Sell-out Rel.',
+    'Subtotal Quant.','Subtotal Qual.','Score Final','Observações','Data'
   ];
   const rows = allEvaluations.map(r => [
     r.representative_name, r.manager_name, r.period, r.year,
-    r.quant_vendas, r.quant_metas, r.quant_visitas, r.quant_ticket,
-    r.qual_comunicacao, r.qual_atitude, r.qual_conhecimento,
+    r.quant_crescimento, r.quant_faturamento, r.quant_positivacao, r.quant_mix, r.quant_faseamento,
+    r.qual_reunioes, r.qual_boas_praticas, r.qual_sell_out, r.qual_chao_loja, r.qual_sell_out_rel,
     r.quantitative_score, r.qualitative_score, r.final_score,
     (r.observations || '').replace(/"/g, '""'),
     new Date(r.submitted_at).toLocaleString('pt-BR')
