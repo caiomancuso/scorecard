@@ -1158,6 +1158,10 @@ const QUAL_CRITERIA = [
   { id: 'conhecimento',name: 'Conhecimento de Produtos',     desc: 'Domínio das características e benefícios',       weight: 10 },
 ];
 
+// Soma dos pesos de cada bloco — escopo global para uso em recalcScores e submitEvaluation
+const QUANT_WEIGHT_TOTAL = QUANT_CRITERIA.reduce((s, c) => s + c.weight, 0); // 80
+const QUAL_WEIGHT_TOTAL  = QUAL_CRITERIA.reduce((s, c)  => s + c.weight, 0); // 30
+
 // ─────────────────────────────────────────────
 // ESTADO
 // ─────────────────────────────────────────────
