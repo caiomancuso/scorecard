@@ -822,6 +822,104 @@
     margin-bottom: 8px;
   }
 
+  /* ── PDF MODAL ── */
+  .pdf-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(26,26,26,0.6);
+    backdrop-filter: blur(4px);
+    z-index: 250;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .pdf-modal-overlay.open { display: flex; }
+  .pdf-modal {
+    background: var(--surface);
+    border: 1px solid #E0E0E0;
+    border-top: 4px solid var(--red);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-md);
+    width: 100%;
+    max-width: 480px;
+    padding: 32px;
+  }
+  .pdf-modal-icon {
+    width: 48px;
+    height: 48px;
+    background: var(--red-dim);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px;
+    font-size: 22px;
+  }
+  .pdf-modal-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+    text-align: center;
+    margin-bottom: 6px;
+  }
+  .pdf-modal-sub {
+    font-size: 12px;
+    color: var(--text-muted);
+    text-align: center;
+    margin-bottom: 24px;
+    line-height: 1.6;
+  }
+  .pdf-modal-preview {
+    background: var(--surface2);
+    border: 1px solid #E8E8E8;
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-bottom: 20px;
+    max-height: 260px;
+    overflow-y: auto;
+  }
+  .pdf-modal-actions {
+    display: flex;
+    gap: 10px;
+  }
+  .btn-pdf-skip {
+    flex: 1;
+    background: none;
+    border: 1px solid #E0E0E0;
+    color: var(--text-muted);
+    padding: 11px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-pdf-skip:hover { border-color: var(--text-muted); color: var(--text); }
+  .btn-pdf-save {
+    flex: 2;
+    background: var(--red);
+    border: none;
+    color: #fff;
+    padding: 11px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .btn-pdf-save:hover { background: var(--red-light); }
+
+  /* ── PRINT STYLES ── */
+  @media print {
+    body > *:not(#printFrame) { display: none !important; }
+    #printFrame { display: block !important; position: fixed; inset: 0; width: 100%; height: 100%; border: none; }
+  }
+
   /* ── CONFIG BANNER ── */
   .config-banner {
     background: rgba(200,16,46,0.05);
@@ -1116,6 +1214,20 @@
   </div>
 </div>
 
+<!-- PDF CONFIRM MODAL -->
+<div class="pdf-modal-overlay" id="pdfModal">
+  <div class="pdf-modal">
+    <div class="pdf-modal-icon">📄</div>
+    <div class="pdf-modal-title">Salvar comprovante em PDF?</div>
+    <div class="pdf-modal-sub" id="pdfModalSub">Avaliação registrada com sucesso.<br>Deseja salvar um comprovante desta avaliação?</div>
+    <div class="pdf-modal-preview" id="pdfModalPreview"></div>
+    <div class="pdf-modal-actions">
+      <button class="btn-pdf-skip" onclick="closePdfModal()">Não, obrigado</button>
+      <button class="btn-pdf-save" onclick="generatePDF()">Salvar PDF</button>
+    </div>
+  </div>
+</div>
+
 <!-- DELETE CONFIRM MODAL -->
 <div class="modal-overlay" id="deleteModal">
   <div class="modal" style="max-width:400px">
@@ -1171,6 +1283,7 @@ let ADMIN_PASS   = '';
 let adminLoggedIn = false;
 let allEvaluations = [];
 let currentDetail = null;
+let lastSavedEvaluation = null; // guarda dados da última avaliação para PDF
 
 // ─────────────────────────────────────────────
 // INIT
@@ -1370,7 +1483,19 @@ async function submitEvaluation() {
     };
     await supabase('POST', 'scorecard_evaluations', payload);
     showToast('success', '✓', `Avaliação salva. Score final: ${finalScore}`);
+    // Guardar dados para oferecer PDF
+    lastSavedEvaluation = {
+      ...payload,
+      quant_vendas:      qScores.vendas,
+      quant_metas:       qScores.metas,
+      quant_visitas:     qScores.visitas,
+      quant_ticket:      qScores.ticket,
+      qual_comunicacao:  qlScores.comunicacao,
+      qual_atitude:      qlScores.atitude,
+      qual_conhecimento: qlScores.conhecimento,
+    };
     resetForm();
+    setTimeout(() => openPdfModal(lastSavedEvaluation), 600);
   } catch(e) {
     console.error('Erro ao salvar:', e);
     let msg = 'Erro ao salvar.';
@@ -1616,6 +1741,144 @@ function openDetail(idx) {
 
 function closeModal() {
   document.getElementById('detailModal').classList.remove('open');
+}
+
+// ─────────────────────────────────────────────
+// PDF GENERATION
+// ─────────────────────────────────────────────
+function buildEvalHTML(r) {
+  const scoreColor = r.final_score >= 8 ? '#1A8A4A' : r.final_score >= 6 ? '#C07800' : '#C8102E';
+  const date = r.submitted_at
+    ? new Date(r.submitted_at).toLocaleDateString('pt-BR', {day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})
+    : new Date().toLocaleDateString('pt-BR', {day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+
+  return `
+    <div style="font-family:'Segoe UI',system-ui,sans-serif;max-width:600px;margin:0 auto;padding:32px;color:#1A1A1A;">
+      <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:3px solid #C8102E;padding-bottom:16px;margin-bottom:24px;">
+        <div>
+          <div style="font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:#C8102E;font-weight:700;margin-bottom:4px;">Yamá Cosméticos · Scorecard RCA</div>
+          <div style="font-size:20px;font-weight:800;color:#1A1A1A;">${esc(r.representative_name)}</div>
+          <div style="font-size:12px;color:#6B6B6B;margin-top:3px;">Avaliado por ${esc(r.manager_name)} · ${r.period} ${r.year}</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#AAAAAA;margin-bottom:4px;">Score Final</div>
+          <div style="font-size:40px;font-weight:800;color:${scoreColor};line-height:1;">${r.final_score}</div>
+          <div style="font-size:10px;color:#AAAAAA;">de 10</div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px;">
+        <div style="background:#F7F7F8;border-radius:6px;padding:14px;text-align:center;">
+          <div style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#6B6B6B;margin-bottom:6px;font-weight:600;">Quantitativo</div>
+          <div style="font-size:24px;font-weight:800;color:#C8102E;">${parseFloat(r.quantitative_score).toFixed(1)}</div>
+          <div style="font-size:10px;color:#AAAAAA;">peso 70%</div>
+        </div>
+        <div style="background:#F7F7F8;border-radius:6px;padding:14px;text-align:center;">
+          <div style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#6B6B6B;margin-bottom:6px;font-weight:600;">Qualitativo</div>
+          <div style="font-size:24px;font-weight:800;color:#C8102E;">${parseFloat(r.qualitative_score).toFixed(1)}</div>
+          <div style="font-size:10px;color:#AAAAAA;">peso 30%</div>
+        </div>
+      </div>
+
+      <div style="margin-bottom:20px;">
+        <div style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#C8102E;font-weight:700;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid #EBEBEB;">Avaliação Quantitativa (70%)</div>
+        ${QUANT_CRITERIA.map(c => `
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid #F5F5F5;">
+            <div style="font-size:12px;color:#1A1A1A;">${c.name}</div>
+            <div style="font-size:14px;font-weight:700;color:#C8102E;">${r['quant_'+c.id] ?? '—'}</div>
+          </div>
+        `).join('')}
+      </div>
+
+      <div style="margin-bottom:20px;">
+        <div style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#C8102E;font-weight:700;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid #EBEBEB;">Avaliação Qualitativa (30%)</div>
+        ${QUAL_CRITERIA.map(c => `
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid #F5F5F5;">
+            <div style="font-size:12px;color:#1A1A1A;">${c.name}</div>
+            <div style="font-size:14px;font-weight:700;color:#C8102E;">${r['qual_'+c.id] ?? '—'}</div>
+          </div>
+        `).join('')}
+      </div>
+
+      ${r.observations ? `
+        <div style="margin-bottom:20px;">
+          <div style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#AAAAAA;margin-bottom:8px;font-weight:600;">Observações</div>
+          <div style="background:#F7F7F8;border-radius:6px;padding:14px;font-size:12px;color:#6B6B6B;line-height:1.7;font-style:italic;">"${esc(r.observations)}"</div>
+        </div>
+      ` : ''}
+
+      <div style="border-top:1px solid #EBEBEB;padding-top:12px;font-size:10px;color:#AAAAAA;display:flex;justify-content:space-between;">
+        <span>Yamá Cosméticos · Sistema de Scorecard</span>
+        <span>${date}</span>
+      </div>
+    </div>
+  `;
+}
+
+function openPdfModal(r) {
+  if (!r) return;
+  document.getElementById('pdfModalSub').innerHTML =
+    `Avaliação de <strong>${esc(r.representative_name)}</strong> registrada com sucesso.<br>Deseja salvar um comprovante em PDF?`;
+  // Mostrar preview resumido no modal
+  document.getElementById('pdfModalPreview').innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+      <div>
+        <div style="font-weight:700;font-size:13px;">${esc(r.representative_name)}</div>
+        <div style="font-size:11px;color:#6B6B6B;">${r.period} ${r.year} · ${esc(r.manager_name)}</div>
+      </div>
+      <div style="font-size:24px;font-weight:800;color:${r.final_score>=8?'#1A8A4A':r.final_score>=6?'#C07800':'#C8102E'}">${r.final_score}</div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+      <div style="background:#fff;border:1px solid #E8E8E8;border-radius:4px;padding:10px;text-align:center;">
+        <div style="font-size:9px;text-transform:uppercase;letter-spacing:0.08em;color:#AAAAAA;margin-bottom:4px;">Quantitativo</div>
+        <div style="font-size:18px;font-weight:700;color:#C8102E;">${parseFloat(r.quantitative_score).toFixed(1)}</div>
+      </div>
+      <div style="background:#fff;border:1px solid #E8E8E8;border-radius:4px;padding:10px;text-align:center;">
+        <div style="font-size:9px;text-transform:uppercase;letter-spacing:0.08em;color:#AAAAAA;margin-bottom:4px;">Qualitativo</div>
+        <div style="font-size:18px;font-weight:700;color:#C8102E;">${parseFloat(r.qualitative_score).toFixed(1)}</div>
+      </div>
+    </div>
+  `;
+  document.getElementById('pdfModal').classList.add('open');
+}
+
+function closePdfModal() {
+  document.getElementById('pdfModal').classList.remove('open');
+  lastSavedEvaluation = null;
+}
+
+function generatePDF() {
+  if (!lastSavedEvaluation) return;
+  const r = lastSavedEvaluation;
+  const html = buildEvalHTML(r);
+  const repName = r.representative_name.replace(/[^a-zA-Z0-9]/g, '_');
+  const fileName = `Scorecard_${repName}_${r.period}_${r.year}.pdf`;
+
+  // Abre janela de impressão com o conteúdo formatado
+  const printWin = window.open('', '_blank', 'width=800,height=900');
+  printWin.document.write(`<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>${fileName}</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #fff; }
+    @page { margin: 15mm; size: A4; }
+    @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+  </style>
+</head>
+<body>${html}</body>
+</html>`);
+  printWin.document.close();
+  printWin.focus();
+  setTimeout(() => {
+    printWin.print();
+    printWin.close();
+  }, 400);
+
+  closePdfModal();
+  showToast('success', '↓', `PDF gerado: ${fileName}`);
 }
 
 // ─────────────────────────────────────────────
