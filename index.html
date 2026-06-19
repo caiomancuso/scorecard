@@ -1,0 +1,1808 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Scorecard · Yamá Cosméticos</title>
+<style>
+  :root {
+    --gold: #C9A84C;
+    --gold-light: #E8C96A;
+    --gold-dim: rgba(201,168,76,0.15);
+    --gold-border: rgba(201,168,76,0.35);
+    --black: #0A0A0A;
+    --surface: #111111;
+    --surface2: #181818;
+    --surface3: #202020;
+    --text: #F0EDE6;
+    --text-muted: #888880;
+    --text-dim: #555550;
+    --red: #C0392B;
+    --green: #27AE60;
+    --radius: 4px;
+    --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--black);
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 14px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--gold-border);
+    padding: 0 32px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .header-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .header-logo {
+    width: 28px;
+    height: 28px;
+  }
+  .header-title {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+  .header-sub {
+    font-size: 11px;
+    color: var(--text-muted);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .btn-admin-toggle {
+    background: none;
+    border: 1px solid var(--gold-border);
+    color: var(--text-muted);
+    padding: 6px 14px;
+    border-radius: var(--radius);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-admin-toggle:hover { border-color: var(--gold); color: var(--gold); }
+
+  /* ── VIEWS ── */
+  .view { display: none; }
+  .view.active { display: block; }
+
+  /* ── FORM VIEW ── */
+  .form-hero {
+    background: linear-gradient(180deg, var(--surface) 0%, var(--black) 100%);
+    border-bottom: 1px solid var(--gold-border);
+    padding: 48px 32px 36px;
+    text-align: center;
+  }
+  .form-hero-eyebrow {
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 12px;
+  }
+  .form-hero-title {
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+  .form-hero-title span { color: var(--gold); }
+  .form-hero-sub {
+    font-size: 13px;
+    color: var(--text-muted);
+    max-width: 480px;
+    margin: 0 auto;
+  }
+
+  .form-container {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 40px 32px 80px;
+  }
+
+  /* ── SECTIONS ── */
+  .section {
+    margin-bottom: 36px;
+  }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--gold-border);
+  }
+  .section-num {
+    width: 28px;
+    height: 28px;
+    border: 1px solid var(--gold);
+    color: var(--gold);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border-radius: 2px;
+  }
+  .section-label {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text);
+  }
+  .section-weight {
+    margin-left: auto;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--gold);
+    background: var(--gold-dim);
+    padding: 3px 10px;
+    border-radius: 2px;
+  }
+
+  /* ── FIELDS ── */
+  .field-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  .field-row.full { grid-template-columns: 1fr; }
+  .field-row.three { grid-template-columns: 1fr 1fr 120px; }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .field label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+  .field input, .field select, .field textarea {
+    background: var(--surface2);
+    border: 1px solid #2A2A2A;
+    color: var(--text);
+    padding: 10px 14px;
+    border-radius: var(--radius);
+    font-size: 14px;
+    font-family: var(--font);
+    outline: none;
+    transition: border-color 0.2s;
+    width: 100%;
+  }
+  .field input:focus, .field select:focus, .field textarea:focus {
+    border-color: var(--gold);
+    background: var(--surface3);
+  }
+  .field input::placeholder, .field textarea::placeholder { color: var(--text-dim); }
+  .field select option { background: var(--surface2); }
+  .field textarea { resize: vertical; min-height: 80px; }
+
+  /* ── CRITERIA TABLE ── */
+  .criteria-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 16px;
+  }
+  .criteria-table thead th {
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    padding: 8px 12px;
+    text-align: left;
+    border-bottom: 1px solid #222;
+    font-weight: 600;
+  }
+  .criteria-table thead th:last-child { text-align: right; }
+  .criteria-table tbody tr {
+    border-bottom: 1px solid #1A1A1A;
+    transition: background 0.15s;
+  }
+  .criteria-table tbody tr:hover { background: var(--surface2); }
+  .criteria-table tbody td {
+    padding: 12px 12px;
+    vertical-align: middle;
+  }
+  .criteria-name {
+    font-size: 13px;
+    color: var(--text);
+    font-weight: 500;
+  }
+  .criteria-desc {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+  .criteria-weight {
+    font-size: 11px;
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+  .score-input-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    justify-content: flex-end;
+  }
+  .score-input {
+    width: 64px !important;
+    text-align: center;
+    font-size: 16px !important;
+    font-weight: 600;
+    background: var(--surface3) !important;
+    border: 1px solid #333 !important;
+    padding: 8px 6px !important;
+  }
+  .score-input:focus { border-color: var(--gold) !important; }
+  .score-calc {
+    font-size: 11px;
+    color: var(--text-muted);
+    min-width: 54px;
+    text-align: right;
+  }
+  .score-calc.has-value { color: var(--gold-light); }
+
+  /* ── SCORE SUMMARY BAR ── */
+  .score-bar {
+    background: var(--surface);
+    border: 1px solid var(--gold-border);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 0;
+    margin-bottom: 32px;
+  }
+  .score-bar-item {
+    text-align: center;
+    padding: 0 20px;
+  }
+  .score-bar-item + .score-bar-item {
+    border-left: 1px solid var(--gold-border);
+  }
+  .score-bar-label {
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+  }
+  .score-bar-value {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text-dim);
+    transition: color 0.3s;
+    font-variant-numeric: tabular-nums;
+  }
+  .score-bar-value.filled { color: var(--gold); }
+  .score-bar-value.final.filled { color: var(--gold-light); font-size: 32px; }
+
+  /* ── SUBMIT ── */
+  .btn-submit {
+    width: 100%;
+    background: var(--gold);
+    color: #000;
+    border: none;
+    padding: 16px;
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+  }
+  .btn-submit:hover { background: var(--gold-light); }
+  .btn-submit:active { transform: scale(0.99); }
+  .btn-submit:disabled {
+    background: #2A2A2A;
+    color: var(--text-dim);
+    cursor: not-allowed;
+  }
+
+  /* ── TOAST ── */
+  .toast {
+    position: fixed;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--surface);
+    border: 1px solid var(--gold-border);
+    color: var(--text);
+    padding: 14px 24px;
+    border-radius: var(--radius);
+    font-size: 13px;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.3s;
+    z-index: 999;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+  .toast.success { border-color: var(--green); }
+  .toast.error { border-color: var(--red); }
+  .toast-icon { font-size: 16px; }
+
+  /* ── ADMIN LOGIN ── */
+  .admin-login {
+    min-height: calc(100vh - 56px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+  }
+  .login-card {
+    background: var(--surface);
+    border: 1px solid var(--gold-border);
+    border-radius: var(--radius);
+    padding: 40px 40px;
+    width: 100%;
+    max-width: 380px;
+  }
+  .login-logo {
+    text-align: center;
+    margin-bottom: 28px;
+  }
+  .login-title {
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--gold);
+    text-align: center;
+    margin-bottom: 4px;
+  }
+  .login-sub {
+    font-size: 12px;
+    color: var(--text-muted);
+    text-align: center;
+    margin-bottom: 28px;
+  }
+  .btn-login {
+    width: 100%;
+    background: var(--gold);
+    color: #000;
+    border: none;
+    padding: 13px;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    border-radius: var(--radius);
+    cursor: pointer;
+    margin-top: 16px;
+    transition: background 0.2s;
+  }
+  .btn-login:hover { background: var(--gold-light); }
+  .login-error {
+    font-size: 12px;
+    color: var(--red);
+    text-align: center;
+    margin-top: 10px;
+    min-height: 18px;
+  }
+
+  /* ── ADMIN PANEL ── */
+  .admin-panel {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 36px 32px 80px;
+  }
+  .admin-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 32px;
+  }
+  .admin-page-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .admin-page-title span { color: var(--gold); }
+  .btn-logout {
+    background: none;
+    border: 1px solid #2A2A2A;
+    color: var(--text-muted);
+    padding: 7px 16px;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-logout:hover { border-color: var(--red); color: var(--red); }
+
+  /* ── METRICS CARDS ── */
+  .metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+  .metric-card {
+    background: var(--surface);
+    border: 1px solid #1E1E1E;
+    border-left: 3px solid var(--gold);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+  }
+  .metric-card-label {
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+  }
+  .metric-card-value {
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--gold);
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+  }
+  .metric-card-sub {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+
+  /* ── FILTERS ── */
+  .filters-bar {
+    background: var(--surface);
+    border: 1px solid #1E1E1E;
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+  .filter-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .filter-label {
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+  .filter-group select, .filter-group input {
+    background: var(--surface2);
+    border: 1px solid #2A2A2A;
+    color: var(--text);
+    padding: 7px 12px;
+    border-radius: var(--radius);
+    font-size: 13px;
+    font-family: var(--font);
+    outline: none;
+  }
+  .filter-group select:focus, .filter-group input:focus { border-color: var(--gold); }
+  .filter-group input { width: 80px; }
+  .btn-filter {
+    background: var(--gold-dim);
+    border: 1px solid var(--gold-border);
+    color: var(--gold);
+    padding: 7px 16px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-filter:hover { background: var(--gold); color: #000; }
+  .btn-export {
+    background: none;
+    border: 1px solid #2A2A2A;
+    color: var(--text-muted);
+    padding: 7px 16px;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-left: auto;
+  }
+  .btn-export:hover { border-color: var(--gold); color: var(--gold); }
+
+  /* ── TABLE ── */
+  .table-wrap {
+    background: var(--surface);
+    border: 1px solid #1E1E1E;
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  .table-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px;
+    border-bottom: 1px solid #1E1E1E;
+  }
+  .table-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+  .table-count {
+    font-size: 11px;
+    color: var(--text-dim);
+  }
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .data-table thead th {
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    padding: 10px 16px;
+    text-align: left;
+    border-bottom: 1px solid #1E1E1E;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+  }
+  .data-table thead th:hover { color: var(--gold); }
+  .data-table tbody tr {
+    border-bottom: 1px solid #181818;
+    transition: background 0.1s;
+  }
+  .data-table tbody tr:hover { background: var(--surface2); }
+  .data-table tbody td {
+    padding: 11px 16px;
+    font-size: 13px;
+    vertical-align: middle;
+  }
+  .td-name { font-weight: 600; color: var(--text); }
+  .td-manager { color: var(--text-muted); font-size: 12px; }
+  .td-period {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: var(--gold);
+    background: var(--gold-dim);
+    padding: 3px 8px;
+    border-radius: 2px;
+    display: inline-block;
+  }
+  .td-score {
+    font-size: 15px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+  .td-score.high { color: var(--green); }
+  .td-score.mid { color: var(--gold); }
+  .td-score.low { color: var(--red); }
+  .td-date { font-size: 11px; color: var(--text-dim); }
+  .td-obs {
+    font-size: 11px;
+    color: var(--text-muted);
+    max-width: 180px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .btn-detail {
+    background: none;
+    border: 1px solid #2A2A2A;
+    color: var(--text-muted);
+    padding: 4px 10px;
+    font-size: 10px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn-detail:hover { border-color: var(--gold); color: var(--gold); }
+
+  .table-empty {
+    text-align: center;
+    padding: 48px 20px;
+    color: var(--text-dim);
+    font-size: 13px;
+  }
+  .table-loading {
+    text-align: center;
+    padding: 32px 20px;
+    color: var(--text-muted);
+    font-size: 13px;
+  }
+
+  /* ── DETAIL MODAL ── */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.8);
+    z-index: 200;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--gold-border);
+    border-radius: var(--radius);
+    width: 100%;
+    max-width: 580px;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  .modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--gold-border);
+  }
+  .modal-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .modal-sub {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+  .btn-close-modal {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 20px;
+    cursor: pointer;
+    padding: 4px 8px;
+    line-height: 1;
+    transition: color 0.15s;
+  }
+  .btn-close-modal:hover { color: var(--text); }
+  .modal-body { padding: 24px; }
+  .modal-scores {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .modal-score-box {
+    background: var(--surface2);
+    border-radius: var(--radius);
+    padding: 14px;
+    text-align: center;
+  }
+  .modal-score-box-label {
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+  }
+  .modal-score-box-value {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--gold);
+    font-variant-numeric: tabular-nums;
+  }
+  .modal-score-box.final .modal-score-box-value { font-size: 28px; color: var(--gold-light); }
+  .modal-criteria-section {
+    margin-bottom: 20px;
+  }
+  .modal-criteria-title {
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 10px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--gold-border);
+  }
+  .modal-criteria-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 7px 0;
+    border-bottom: 1px solid #1A1A1A;
+  }
+  .modal-criteria-row:last-child { border-bottom: none; }
+  .modal-criteria-name { font-size: 12px; color: var(--text); }
+  .modal-criteria-score {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--gold);
+    font-variant-numeric: tabular-nums;
+  }
+  .modal-obs {
+    background: var(--surface2);
+    border-radius: var(--radius);
+    padding: 14px;
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.7;
+    font-style: italic;
+    margin-top: 4px;
+  }
+  .modal-obs-label {
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+  }
+
+  /* ── CONFIG BANNER ── */
+  .config-banner {
+    background: rgba(192,57,43,0.1);
+    border: 1px solid rgba(192,57,43,0.4);
+    border-radius: var(--radius);
+    padding: 14px 20px;
+    margin-bottom: 24px;
+    font-size: 12px;
+    color: #E74C3C;
+    display: none;
+  }
+  .config-banner.show { display: block; }
+  .config-banner strong { font-weight: 700; }
+  .config-banner code {
+    background: rgba(192,57,43,0.15);
+    padding: 1px 6px;
+    border-radius: 2px;
+    font-family: monospace;
+    font-size: 11px;
+  }
+
+  /* ── SETUP MODAL ── */
+  .setup-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.92);
+    z-index: 300;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .setup-modal {
+    background: var(--surface);
+    border: 1px solid var(--gold-border);
+    border-radius: var(--radius);
+    width: 100%;
+    max-width: 520px;
+    padding: 36px 36px 32px;
+  }
+  .setup-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+  .setup-title span { color: var(--gold); }
+  .setup-sub {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 24px;
+    line-height: 1.6;
+  }
+  .setup-field {
+    margin-bottom: 14px;
+  }
+  .setup-field label {
+    display: block;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+  }
+  .setup-field input {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid #2A2A2A;
+    color: var(--text);
+    padding: 10px 14px;
+    border-radius: var(--radius);
+    font-size: 13px;
+    font-family: monospace;
+    outline: none;
+  }
+  .setup-field input:focus { border-color: var(--gold); }
+  .setup-field .hint {
+    font-size: 10px;
+    color: var(--text-dim);
+    margin-top: 4px;
+  }
+  .btn-setup-save {
+    width: 100%;
+    background: var(--gold);
+    color: #000;
+    border: none;
+    padding: 13px;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    border-radius: var(--radius);
+    cursor: pointer;
+    margin-top: 8px;
+    transition: background 0.2s;
+  }
+  .btn-setup-save:hover { background: var(--gold-light); }
+  .setup-error {
+    font-size: 12px;
+    color: var(--red);
+    margin-top: 10px;
+    text-align: center;
+    min-height: 16px;
+  }
+
+  /* ── SPINNER ── */
+  .spinner {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(201,168,76,0.2);
+    border-top-color: var(--gold);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    vertical-align: middle;
+    margin-right: 6px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 700px) {
+    .form-container { padding: 24px 16px 60px; }
+    .field-row { grid-template-columns: 1fr; }
+    .field-row.three { grid-template-columns: 1fr 1fr; }
+    .metrics-grid { grid-template-columns: 1fr 1fr; }
+    .score-bar { grid-template-columns: 1fr; gap: 12px; }
+    .score-bar-item + .score-bar-item { border-left: none; border-top: 1px solid var(--gold-border); padding-top: 12px; }
+    .admin-panel { padding: 24px 16px 60px; }
+    .filters-bar { flex-direction: column; align-items: flex-start; }
+    .btn-export { margin-left: 0; }
+    .modal-scores { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- SETUP MODAL (primeira vez) -->
+<div class="setup-overlay" id="setupOverlay">
+  <div class="setup-modal">
+    <div class="setup-title">Configuração <span>Inicial</span></div>
+    <p class="setup-sub">Informe as credenciais do seu projeto Supabase. Elas ficam salvas localmente no seu navegador e não são compartilhadas.</p>
+    <div class="setup-field">
+      <label>Supabase URL</label>
+      <input type="text" id="setupUrl" placeholder="https://xxxxxxxxxxxx.supabase.co">
+      <p class="hint">Encontrado em: Project Settings → API → Project URL</p>
+    </div>
+    <div class="setup-field">
+      <label>Supabase Anon Key</label>
+      <input type="text" id="setupKey" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...">
+      <p class="hint">Encontrado em: Project Settings → API → anon public</p>
+    </div>
+    <div class="setup-field">
+      <label>Senha do Painel Admin</label>
+      <input type="password" id="setupAdminPass" placeholder="Defina uma senha segura">
+      <p class="hint">Esta senha será salva localmente. Use algo diferente de "admin".</p>
+    </div>
+    <button class="btn-setup-save" onclick="saveSetup()">Salvar configuração</button>
+    <div class="setup-error" id="setupError"></div>
+  </div>
+</div>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="header-brand">
+    <svg class="header-logo" viewBox="0 0 28 28" fill="none">
+      <rect width="28" height="28" rx="2" fill="rgba(201,168,76,0.1)"/>
+      <path d="M14 4L22 22H6L14 4Z" stroke="#C9A84C" stroke-width="1.5" fill="none"/>
+      <circle cx="14" cy="14" r="3" fill="#C9A84C" opacity="0.4"/>
+    </svg>
+    <div>
+      <div class="header-title">Yamá Cosméticos</div>
+      <div class="header-sub">Sistema de Scorecard</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <button class="btn-admin-toggle" id="adminToggleBtn" onclick="toggleAdminView()">Painel Admin</button>
+  </div>
+</header>
+
+<!-- VIEW: FORMULÁRIO PÚBLICO -->
+<div class="view active" id="viewForm">
+  <div class="form-hero">
+    <div class="form-hero-eyebrow">Avaliação Trimestral · RCA</div>
+    <h1 class="form-hero-title">Scorecard de <span>Representantes</span></h1>
+    <p class="form-hero-sub">Preencha todos os campos. O score é calculado automaticamente com base nos pesos definidos.</p>
+  </div>
+
+  <div class="form-container">
+
+    <!-- SEÇÃO 01 · IDENTIFICAÇÃO -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-num">01</div>
+        <div class="section-label">Identificação</div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Gerente Regional</label>
+          <input type="text" id="managerName" placeholder="Nome completo">
+        </div>
+        <div class="field">
+          <label>Representante Avaliado</label>
+          <input type="text" id="repName" placeholder="Nome completo">
+        </div>
+      </div>
+      <div class="field-row three">
+        <div class="field">
+          <label>Período</label>
+          <select id="period">
+            <option value="">Selecione</option>
+            <option value="Q1">Q1 · Jan–Mar</option>
+            <option value="Q2">Q2 · Abr–Jun</option>
+            <option value="Q3">Q3 · Jul–Set</option>
+            <option value="Q4">Q4 · Out–Dez</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Canal</label>
+          <select id="canal">
+            <option value="">Selecione</option>
+            <option value="Alimentar">Alimentar</option>
+            <option value="Perfumaria">Perfumaria</option>
+            <option value="Farma">Farma</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Ano</label>
+          <input type="number" id="year" value="2026" min="2024" max="2030">
+        </div>
+      </div>
+    </div>
+
+    <!-- SEÇÃO 02 · QUANTITATIVO -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-num">02</div>
+        <div class="section-label">Avaliação Quantitativa</div>
+        <div class="section-weight">Peso 70%</div>
+      </div>
+      <table class="criteria-table">
+        <thead>
+          <tr>
+            <th>Critério</th>
+            <th>Peso</th>
+            <th style="text-align:right">Nota (0–10)</th>
+          </tr>
+        </thead>
+        <tbody id="quantBody">
+          <!-- gerado por JS -->
+        </tbody>
+      </table>
+    </div>
+
+    <!-- SEÇÃO 03 · QUALITATIVO -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-num">03</div>
+        <div class="section-label">Avaliação Qualitativa</div>
+        <div class="section-weight">Peso 30%</div>
+      </div>
+      <table class="criteria-table">
+        <thead>
+          <tr>
+            <th>Critério</th>
+            <th>Peso</th>
+            <th style="text-align:right">Nota (0–10)</th>
+          </tr>
+        </thead>
+        <tbody id="qualBody">
+          <!-- gerado por JS -->
+        </tbody>
+      </table>
+    </div>
+
+    <!-- SEÇÃO 04 · OBSERVAÇÕES -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-num">04</div>
+        <div class="section-label">Observações</div>
+      </div>
+      <div class="field-row full">
+        <div class="field">
+          <label>Comentários Gerais <span style="color:var(--text-dim);font-weight:400">(opcional)</span></label>
+          <textarea id="observations" placeholder="Contexto adicional sobre o desempenho do representante no período..."></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCORE SUMMARY -->
+    <div class="score-bar">
+      <div class="score-bar-item">
+        <div class="score-bar-label">Quantitativo (70%)</div>
+        <div class="score-bar-value" id="displayQuant">—</div>
+      </div>
+      <div class="score-bar-item">
+        <div class="score-bar-label">Qualitativo (30%)</div>
+        <div class="score-bar-value" id="displayQual">—</div>
+      </div>
+      <div class="score-bar-item">
+        <div class="score-bar-label">Score Final</div>
+        <div class="score-bar-value final" id="displayFinal">—</div>
+      </div>
+    </div>
+
+    <button class="btn-submit" id="btnSubmit" onclick="submitEvaluation()">
+      Salvar Avaliação
+    </button>
+  </div>
+</div>
+
+<!-- VIEW: ADMIN LOGIN -->
+<div class="view" id="viewAdminLogin">
+  <div class="admin-login">
+    <div class="login-card">
+      <div class="login-logo">
+        <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+          <rect width="40" height="40" rx="3" fill="rgba(201,168,76,0.08)"/>
+          <path d="M20 5L32 32H8L20 5Z" stroke="#C9A84C" stroke-width="1.5" fill="none"/>
+          <circle cx="20" cy="20" r="4" fill="#C9A84C" opacity="0.3"/>
+        </svg>
+      </div>
+      <div class="login-title">Acesso Restrito</div>
+      <div class="login-sub">Painel Administrativo · Yamá Scorecard</div>
+      <div class="field">
+        <label>Senha</label>
+        <input type="password" id="adminPassInput" placeholder="••••••••" onkeydown="if(event.key==='Enter')adminLogin()">
+      </div>
+      <button class="btn-login" onclick="adminLogin()">Acessar Painel</button>
+      <div class="login-error" id="loginError"></div>
+    </div>
+  </div>
+</div>
+
+<!-- VIEW: ADMIN PANEL -->
+<div class="view" id="viewAdmin">
+  <div class="admin-panel">
+    <div class="admin-topbar">
+      <div>
+        <div class="admin-page-title">Painel <span>Administrativo</span></div>
+      </div>
+      <button class="btn-logout" onclick="adminLogout()">Sair</button>
+    </div>
+
+    <div class="config-banner" id="configBanner">
+      <strong>Supabase não configurado.</strong> Clique em <code>Configurar</code> no rodapé para inserir suas credenciais.
+    </div>
+
+    <!-- METRICS -->
+    <div class="metrics-grid" id="metricsGrid">
+      <div class="metric-card">
+        <div class="metric-card-label">Total de Avaliações</div>
+        <div class="metric-card-value" id="metTotal">—</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-card-label">Score Médio Geral</div>
+        <div class="metric-card-value" id="metAvg">—</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-card-label">Destaque do Período</div>
+        <div class="metric-card-value" id="metTop" style="font-size:14px;line-height:1.3">—</div>
+        <div class="metric-card-sub" id="metTopScore"></div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-card-label">Requer Atenção</div>
+        <div class="metric-card-value" id="metBot" style="font-size:14px;line-height:1.3;color:#C0392B">—</div>
+        <div class="metric-card-sub" id="metBotScore"></div>
+      </div>
+    </div>
+
+    <!-- FILTERS -->
+    <div class="filters-bar">
+      <div class="filter-group">
+        <span class="filter-label">Período</span>
+        <select id="filterPeriod">
+          <option value="">Todos</option>
+          <option value="Q1">Q1</option>
+          <option value="Q2">Q2</option>
+          <option value="Q3">Q3</option>
+          <option value="Q4">Q4</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <span class="filter-label">Canal</span>
+        <select id="filterCanal">
+          <option value="">Todos</option>
+          <option value="Alimentar">Alimentar</option>
+          <option value="Perfumaria">Perfumaria</option>
+          <option value="Farma">Farma</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <span class="filter-label">Ano</span>
+        <input type="number" id="filterYear" value="2026" min="2024" max="2030">
+      </div>
+      <button class="btn-filter" onclick="loadAdminData()">Atualizar</button>
+      <button class="btn-export" onclick="exportCSV()">Exportar CSV</button>
+    </div>
+
+    <!-- TABLE -->
+    <div class="table-wrap">
+      <div class="table-header">
+        <div class="table-title">Avaliações Registradas</div>
+        <div class="table-count" id="tableCount"></div>
+      </div>
+      <div id="tableBody">
+        <div class="table-loading">Carregando...</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DETAIL MODAL -->
+<div class="modal-overlay" id="detailModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="modalTitle">—</div>
+        <div class="modal-sub" id="modalSub">—</div>
+      </div>
+      <button class="btn-close-modal" onclick="closeModal()">×</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <span class="toast-icon" id="toastIcon"></span>
+  <span id="toastMsg"></span>
+</div>
+
+<script>
+// ─────────────────────────────────────────────
+// CONFIG · CRITÉRIOS
+// ─────────────────────────────────────────────
+const QUANT_CRITERIA = [
+  { id: 'vendas',    name: 'Vendas Realizadas',   desc: 'Volume de vendas atingido no período',  weight: 20 },
+  { id: 'metas',     name: 'Cumprimento de Metas', desc: 'Percentual de meta alcançado',          weight: 20 },
+  { id: 'visitas',   name: 'Frequência de Visitas',desc: 'Número de visitas aos clientes',        weight: 20 },
+  { id: 'ticket',    name: 'Ticket Médio',          desc: 'Valor médio das transações',            weight: 20 },
+];
+const QUAL_CRITERIA = [
+  { id: 'comunicacao', name: 'Comunicação e Relacionamento', desc: 'Qualidade da comunicação com clientes e equipe', weight: 10 },
+  { id: 'atitude',     name: 'Atitude e Comprometimento',    desc: 'Demonstração de compromisso com os objetivos',   weight: 10 },
+  { id: 'conhecimento',name: 'Conhecimento de Produtos',     desc: 'Domínio das características e benefícios',       weight: 10 },
+];
+
+// ─────────────────────────────────────────────
+// ESTADO
+// ─────────────────────────────────────────────
+let SUPABASE_URL = '';
+let SUPABASE_KEY = '';
+let ADMIN_PASS   = '';
+let adminLoggedIn = false;
+let allEvaluations = [];
+let currentDetail = null;
+
+// ─────────────────────────────────────────────
+// INIT
+// ─────────────────────────────────────────────
+function init() {
+  SUPABASE_URL = localStorage.getItem('sc_url') || '';
+  SUPABASE_KEY = localStorage.getItem('sc_key') || '';
+  ADMIN_PASS   = localStorage.getItem('sc_pass') || '';
+
+  if (!SUPABASE_URL || !SUPABASE_KEY || !ADMIN_PASS) {
+    document.getElementById('setupOverlay').style.display = 'flex';
+  } else {
+    document.getElementById('setupOverlay').style.display = 'none';
+  }
+
+  renderCriteriaTable('quantBody', QUANT_CRITERIA, 'q');
+  renderCriteriaTable('qualBody',  QUAL_CRITERIA,  'ql');
+}
+
+// ─────────────────────────────────────────────
+// SETUP
+// ─────────────────────────────────────────────
+function saveSetup() {
+  const url  = document.getElementById('setupUrl').value.trim();
+  const key  = document.getElementById('setupKey').value.trim();
+  const pass = document.getElementById('setupAdminPass').value.trim();
+  const err  = document.getElementById('setupError');
+
+  if (!url || !key || !pass) { err.textContent = 'Preencha todos os campos.'; return; }
+  if (!url.startsWith('https://')) { err.textContent = 'URL inválida. Deve começar com https://'; return; }
+  if (pass.length < 4) { err.textContent = 'Senha muito curta (mínimo 4 caracteres).'; return; }
+
+  localStorage.setItem('sc_url', url);
+  localStorage.setItem('sc_key', key);
+  localStorage.setItem('sc_pass', pass);
+  SUPABASE_URL = url;
+  SUPABASE_KEY = key;
+  ADMIN_PASS   = pass;
+
+  document.getElementById('setupOverlay').style.display = 'none';
+  showToast('success', '✓', 'Configuração salva. Crie a tabela no Supabase para começar.');
+}
+
+// ─────────────────────────────────────────────
+// SUPABASE API HELPER
+// ─────────────────────────────────────────────
+async function supabase(method, table, body, query) {
+  let url = `${SUPABASE_URL}/rest/v1/${table}`;
+  if (query) url += `?${query}`;
+  const res = await fetch(url, {
+    method,
+    headers: {
+      'apikey': SUPABASE_KEY,
+      'Authorization': `Bearer ${SUPABASE_KEY}`,
+      'Content-Type': 'application/json',
+      'Prefer': method === 'POST' ? 'return=representation' : 'return=representation',
+    },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  const text = await res.text();
+  if (!res.ok) throw new Error(text || res.statusText);
+  return text ? JSON.parse(text) : null;
+}
+
+// ─────────────────────────────────────────────
+// CRITÉRIOS TABLE RENDER
+// ─────────────────────────────────────────────
+function renderCriteriaTable(tbodyId, criteria, prefix) {
+  const tbody = document.getElementById(tbodyId);
+  tbody.innerHTML = criteria.map(c => `
+    <tr>
+      <td>
+        <div class="criteria-name">${c.name}</div>
+        <div class="criteria-desc">${c.desc}</div>
+      </td>
+      <td class="criteria-weight">${c.weight}%</td>
+      <td>
+        <div class="score-input-wrap">
+          <input
+            type="number"
+            class="score-input"
+            id="${prefix}_${c.id}"
+            min="0" max="10" step="1"
+            placeholder="—"
+            oninput="recalcScores()"
+          >
+          <span class="score-calc" id="${prefix}_calc_${c.id}">—</span>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+// ─────────────────────────────────────────────
+// CÁLCULO DE SCORES
+// ─────────────────────────────────────────────
+function recalcScores() {
+  let quantSum = 0, quantFilled = 0;
+  QUANT_CRITERIA.forEach(c => {
+    const inp = document.getElementById(`q_${c.id}`);
+    const calc = document.getElementById(`q_calc_${c.id}`);
+    if (inp && inp.value !== '') {
+      const v = Math.min(10, Math.max(0, parseFloat(inp.value) || 0));
+      const contrib = (v * c.weight) / 100;
+      quantSum += contrib;
+      quantFilled++;
+      calc.textContent = contrib.toFixed(2);
+      calc.classList.add('has-value');
+    } else {
+      calc.textContent = '—';
+      calc.classList.remove('has-value');
+    }
+  });
+
+  let qualSum = 0, qualFilled = 0;
+  QUAL_CRITERIA.forEach(c => {
+    const inp = document.getElementById(`ql_${c.id}`);
+    const calc = document.getElementById(`ql_calc_${c.id}`);
+    if (inp && inp.value !== '') {
+      const v = Math.min(10, Math.max(0, parseFloat(inp.value) || 0));
+      const contrib = (v * c.weight) / 100;
+      qualSum += contrib;
+      qualFilled++;
+      calc.textContent = contrib.toFixed(2);
+      calc.classList.add('has-value');
+    } else {
+      calc.textContent = '—';
+      calc.classList.remove('has-value');
+    }
+  });
+
+  // médias ponderadas (base 10)
+  const quantMean = quantFilled === QUANT_CRITERIA.length ? (quantSum / 0.7) : null;
+  const qualMean  = qualFilled  === QUAL_CRITERIA.length  ? (qualSum  / 0.3) : null;
+
+  const dq = document.getElementById('displayQuant');
+  const dql = document.getElementById('displayQual');
+  const df = document.getElementById('displayFinal');
+
+  if (quantMean !== null) { dq.textContent = quantMean.toFixed(1); dq.classList.add('filled'); }
+  else { dq.textContent = '—'; dq.classList.remove('filled'); }
+
+  if (qualMean !== null) { dql.textContent = qualMean.toFixed(1); dql.classList.add('filled'); }
+  else { dql.textContent = '—'; dql.classList.remove('filled'); }
+
+  if (quantMean !== null && qualMean !== null) {
+    const final = Math.round((quantMean * 0.7) + (qualMean * 0.3));
+    df.textContent = final;
+    df.classList.add('filled');
+  } else {
+    df.textContent = '—';
+    df.classList.remove('filled');
+  }
+}
+
+// ─────────────────────────────────────────────
+// SUBMIT
+// ─────────────────────────────────────────────
+async function submitEvaluation() {
+  const manager  = document.getElementById('managerName').value.trim();
+  const rep      = document.getElementById('repName').value.trim();
+  const period   = document.getElementById('period').value;
+  const canal    = document.getElementById('canal').value;
+  const year     = parseInt(document.getElementById('year').value);
+  const obs      = document.getElementById('observations').value.trim();
+
+  if (!manager || !rep || !period || !canal) {
+    showToast('error', '✕', 'Preencha todos os campos obrigatórios.');
+    return;
+  }
+
+  // coleta scores quant
+  let quantSum = 0;
+  const qScores = {};
+  for (const c of QUANT_CRITERIA) {
+    const v = parseFloat(document.getElementById(`q_${c.id}`).value);
+    if (isNaN(v) || v < 0 || v > 10) {
+      showToast('error', '✕', `Nota inválida: ${c.name}`);
+      return;
+    }
+    qScores[c.id] = v;
+    quantSum += (v * c.weight) / 100;
+  }
+  const quantMean = quantSum / 0.7;
+
+  // coleta scores qual
+  let qualSum = 0;
+  const qlScores = {};
+  for (const c of QUAL_CRITERIA) {
+    const v = parseFloat(document.getElementById(`ql_${c.id}`).value);
+    if (isNaN(v) || v < 0 || v > 10) {
+      showToast('error', '✕', `Nota inválida: ${c.name}`);
+      return;
+    }
+    qlScores[c.id] = v;
+    qualSum += (v * c.weight) / 100;
+  }
+  const qualMean = qualSum / 0.3;
+  const finalScore = Math.round((quantMean * 0.7) + (qualMean * 0.3));
+
+  const btn = document.getElementById('btnSubmit');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Salvando...';
+
+  try {
+    const payload = {
+      manager_name:       manager,
+      representative_name: rep,
+      period,
+      canal,
+      year,
+      quant_vendas:        qScores.vendas,
+      quant_metas:         qScores.metas,
+      quant_visitas:       qScores.visitas,
+      quant_ticket:        qScores.ticket,
+      qual_comunicacao:    qlScores.comunicacao,
+      qual_atitude:        qlScores.atitude,
+      qual_conhecimento:   qlScores.conhecimento,
+      quantitative_score:  parseFloat(quantMean.toFixed(2)),
+      qualitative_score:   parseFloat(qualMean.toFixed(2)),
+      final_score:         finalScore,
+      observations:        obs || null,
+    };
+    await supabase('POST', 'scorecard_evaluations', payload);
+    showToast('success', '✓', `Avaliação salva. Score final: ${finalScore}`);
+    resetForm();
+  } catch(e) {
+    console.error(e);
+    showToast('error', '✕', 'Erro ao salvar. Verifique as credenciais e a tabela no Supabase.');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Salvar Avaliação';
+  }
+}
+
+function resetForm() {
+  ['managerName','repName','observations'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('period').value = '';
+  document.getElementById('canal').value = '';
+  document.getElementById('year').value = '2026';
+  QUANT_CRITERIA.forEach(c => {
+    document.getElementById(`q_${c.id}`).value = '';
+    document.getElementById(`q_calc_${c.id}`).textContent = '—';
+    document.getElementById(`q_calc_${c.id}`).classList.remove('has-value');
+  });
+  QUAL_CRITERIA.forEach(c => {
+    document.getElementById(`ql_${c.id}`).value = '';
+    document.getElementById(`ql_calc_${c.id}`).textContent = '—';
+    document.getElementById(`ql_calc_${c.id}`).classList.remove('has-value');
+  });
+  ['displayQuant','displayQual','displayFinal'].forEach(id => {
+    const el = document.getElementById(id);
+    el.textContent = '—';
+    el.classList.remove('filled');
+  });
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ─────────────────────────────────────────────
+// ADMIN NAVIGATION
+// ─────────────────────────────────────────────
+function toggleAdminView() {
+  const btn = document.getElementById('adminToggleBtn');
+  if (adminLoggedIn) {
+    showView('viewAdmin');
+    btn.textContent = '← Formulário';
+  } else {
+    if (document.getElementById('viewAdminLogin').classList.contains('active')) {
+      showView('viewForm');
+      btn.textContent = 'Painel Admin';
+    } else {
+      showView('viewAdminLogin');
+      btn.textContent = '← Formulário';
+      setTimeout(() => document.getElementById('adminPassInput').focus(), 100);
+    }
+  }
+}
+
+function showView(id) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function adminLogin() {
+  const input = document.getElementById('adminPassInput').value;
+  const err = document.getElementById('loginError');
+  if (input === ADMIN_PASS) {
+    adminLoggedIn = true;
+    document.getElementById('adminPassInput').value = '';
+    err.textContent = '';
+    showView('viewAdmin');
+    document.getElementById('adminToggleBtn').textContent = '← Formulário';
+    loadAdminData();
+  } else {
+    err.textContent = 'Senha incorreta.';
+    document.getElementById('adminPassInput').value = '';
+    document.getElementById('adminPassInput').focus();
+  }
+}
+
+function adminLogout() {
+  adminLoggedIn = false;
+  showView('viewForm');
+  document.getElementById('adminToggleBtn').textContent = 'Painel Admin';
+}
+
+// ─────────────────────────────────────────────
+// ADMIN DATA
+// ─────────────────────────────────────────────
+async function loadAdminData() {
+  const period = document.getElementById('filterPeriod').value;
+  const canal  = document.getElementById('filterCanal').value;
+  const year   = document.getElementById('filterYear').value;
+
+  document.getElementById('tableBody').innerHTML = '<div class="table-loading"><span class="spinner"></span>Carregando...</div>';
+
+  try {
+    let query = `order=submitted_at.desc`;
+    if (year) query += `&year=eq.${year}`;
+    if (period) query += `&period=eq.${period}`;
+    if (canal)  query += `&canal=eq.${canal}`;
+
+    const data = await supabase('GET', 'scorecard_evaluations', null, query);
+    allEvaluations = data || [];
+    renderTable(allEvaluations);
+    renderMetrics(allEvaluations);
+  } catch(e) {
+    console.error(e);
+    document.getElementById('tableBody').innerHTML = `<div class="table-empty">Erro ao carregar dados. Verifique se a tabela <strong>scorecard_evaluations</strong> existe no Supabase.</div>`;
+    renderMetrics([]);
+  }
+}
+
+function renderMetrics(data) {
+  const total = data.length;
+  const avg = total > 0 ? (data.reduce((s, r) => s + r.final_score, 0) / total).toFixed(1) : '—';
+  const sorted = [...data].sort((a, b) => b.final_score - a.final_score);
+
+  document.getElementById('metTotal').textContent = total;
+  document.getElementById('metAvg').textContent = avg;
+
+  if (sorted.length > 0) {
+    document.getElementById('metTop').textContent = sorted[0].representative_name;
+    document.getElementById('metTopScore').textContent = `Score ${sorted[0].final_score}`;
+    document.getElementById('metBot').textContent = sorted[sorted.length-1].representative_name;
+    document.getElementById('metBotScore').textContent = `Score ${sorted[sorted.length-1].final_score}`;
+  } else {
+    ['metTop','metBot'].forEach(id => document.getElementById(id).textContent = '—');
+    ['metTopScore','metBotScore'].forEach(id => document.getElementById(id).textContent = '');
+  }
+}
+
+function renderTable(data) {
+  document.getElementById('tableCount').textContent = `${data.length} registro${data.length !== 1 ? 's' : ''}`;
+
+  if (data.length === 0) {
+    document.getElementById('tableBody').innerHTML = '<div class="table-empty">Nenhuma avaliação encontrada para os filtros selecionados.</div>';
+    return;
+  }
+
+  const rows = data.map((r, i) => {
+    const scoreClass = r.final_score >= 8 ? 'high' : r.final_score >= 6 ? 'mid' : 'low';
+    const date = new Date(r.submitted_at).toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit', year:'2-digit', hour:'2-digit', minute:'2-digit' });
+    return `
+      <tr>
+        <td>
+          <div class="td-name">${esc(r.representative_name)}</div>
+          <div class="td-manager">${esc(r.manager_name)}</div>
+        </td>
+        <td><span class="td-period">${r.period} ${r.year}</span></td>
+        <td>${r.canal || '—'}</td>
+        <td class="td-score">${parseFloat(r.quantitative_score).toFixed(1)}</td>
+        <td class="td-score">${parseFloat(r.qualitative_score).toFixed(1)}</td>
+        <td class="td-score ${scoreClass}">${r.final_score}</td>
+        <td class="td-date">${date}</td>
+        <td><button class="btn-detail" onclick="openDetail(${i})">Ver</button></td>
+      </tr>
+    `;
+  }).join('');
+
+  document.getElementById('tableBody').innerHTML = `
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Representante / Gerente</th>
+          <th>Período</th>
+          <th>Canal</th>
+          <th>Quant.</th>
+          <th>Qual.</th>
+          <th>Score</th>
+          <th>Data</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>
+  `;
+}
+
+// ─────────────────────────────────────────────
+// DETAIL MODAL
+// ─────────────────────────────────────────────
+function openDetail(idx) {
+  const r = allEvaluations[idx];
+  if (!r) return;
+  currentDetail = r;
+
+  document.getElementById('modalTitle').textContent = r.representative_name;
+  document.getElementById('modalSub').textContent = `${r.period} ${r.year} · ${r.canal || 'Canal não informado'} · Avaliado por ${r.manager_name}`;
+
+  const scoreClass = r.final_score >= 8 ? '#27AE60' : r.final_score >= 6 ? '#C9A84C' : '#C0392B';
+
+  document.getElementById('modalBody').innerHTML = `
+    <div class="modal-scores">
+      <div class="modal-score-box">
+        <div class="modal-score-box-label">Quantitativo</div>
+        <div class="modal-score-box-value">${parseFloat(r.quantitative_score).toFixed(1)}</div>
+      </div>
+      <div class="modal-score-box">
+        <div class="modal-score-box-label">Qualitativo</div>
+        <div class="modal-score-box-value">${parseFloat(r.qualitative_score).toFixed(1)}</div>
+      </div>
+      <div class="modal-score-box final">
+        <div class="modal-score-box-label">Score Final</div>
+        <div class="modal-score-box-value" style="color:${scoreClass}">${r.final_score}</div>
+      </div>
+    </div>
+
+    <div class="modal-criteria-section">
+      <div class="modal-criteria-title">Avaliação Quantitativa (70%)</div>
+      ${QUANT_CRITERIA.map(c => `
+        <div class="modal-criteria-row">
+          <div>
+            <div class="modal-criteria-name">${c.name}</div>
+          </div>
+          <div class="modal-criteria-score">${r['quant_'+c.id] ?? '—'}</div>
+        </div>
+      `).join('')}
+    </div>
+
+    <div class="modal-criteria-section">
+      <div class="modal-criteria-title">Avaliação Qualitativa (30%)</div>
+      ${QUAL_CRITERIA.map(c => `
+        <div class="modal-criteria-row">
+          <div>
+            <div class="modal-criteria-name">${c.name}</div>
+          </div>
+          <div class="modal-criteria-score">${r['qual_'+c.id] ?? '—'}</div>
+        </div>
+      `).join('')}
+    </div>
+
+    ${r.observations ? `
+      <div>
+        <div class="modal-obs-label">Observações</div>
+        <div class="modal-obs">"${esc(r.observations)}"</div>
+      </div>
+    ` : ''}
+  `;
+
+  document.getElementById('detailModal').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('detailModal').classList.remove('open');
+}
+
+document.getElementById('detailModal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+// ─────────────────────────────────────────────
+// EXPORT CSV
+// ─────────────────────────────────────────────
+function exportCSV() {
+  if (allEvaluations.length === 0) { showToast('error', '✕', 'Nenhum dado para exportar.'); return; }
+
+  const headers = [
+    'Representante','Gerente','Período','Ano','Canal',
+    'Vendas','Metas','Visitas','Ticket',
+    'Comunicação','Atitude','Conhecimento',
+    'Score Quant.','Score Qual.','Score Final','Observações','Data'
+  ];
+  const rows = allEvaluations.map(r => [
+    r.representative_name, r.manager_name, r.period, r.year, r.canal || '',
+    r.quant_vendas, r.quant_metas, r.quant_visitas, r.quant_ticket,
+    r.qual_comunicacao, r.qual_atitude, r.qual_conhecimento,
+    r.quantitative_score, r.qualitative_score, r.final_score,
+    (r.observations || '').replace(/"/g, '""'),
+    new Date(r.submitted_at).toLocaleString('pt-BR')
+  ]);
+
+  const csv = [headers, ...rows].map(r => r.map(v => `"${v}"`).join(',')).join('\n');
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+  const url  = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `scorecard_yama_${new Date().toISOString().slice(0,10)}.csv`;
+  link.click();
+  URL.revokeObjectURL(url);
+  showToast('success', '↓', `${allEvaluations.length} avaliações exportadas.`);
+}
+
+// ─────────────────────────────────────────────
+// UTILS
+// ─────────────────────────────────────────────
+function esc(str) {
+  if (!str) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+let toastTimeout;
+function showToast(type, icon, msg) {
+  const t = document.getElementById('toast');
+  document.getElementById('toastIcon').textContent = icon;
+  document.getElementById('toastMsg').textContent  = msg;
+  t.className = `toast ${type} show`;
+  clearTimeout(toastTimeout);
+  toastTimeout = setTimeout(() => t.classList.remove('show'), 3800);
+}
+
+// ─────────────────────────────────────────────
+// START
+// ─────────────────────────────────────────────
+init();
+</script>
+
+<!-- ── SQL SETUP INSTRUCTIONS (hidden) ──────────────────────
+Para criar a tabela no Supabase, execute no SQL Editor:
+
+CREATE TABLE scorecard_evaluations (
+  id                  BIGSERIAL PRIMARY KEY,
+  manager_name        VARCHAR(255) NOT NULL,
+  representative_name VARCHAR(255) NOT NULL,
+  period              VARCHAR(2) NOT NULL CHECK (period IN ('Q1','Q2','Q3','Q4')),
+  canal               VARCHAR(50),
+  year                INT NOT NULL DEFAULT 2026,
+  quant_vendas        SMALLINT NOT NULL CHECK (quant_vendas BETWEEN 0 AND 10),
+  quant_metas         SMALLINT NOT NULL CHECK (quant_metas BETWEEN 0 AND 10),
+  quant_visitas       SMALLINT NOT NULL CHECK (quant_visitas BETWEEN 0 AND 10),
+  quant_ticket        SMALLINT NOT NULL CHECK (quant_ticket BETWEEN 0 AND 10),
+  qual_comunicacao    SMALLINT NOT NULL CHECK (qual_comunicacao BETWEEN 0 AND 10),
+  qual_atitude        SMALLINT NOT NULL CHECK (qual_atitude BETWEEN 0 AND 10),
+  qual_conhecimento   SMALLINT NOT NULL CHECK (qual_conhecimento BETWEEN 0 AND 10),
+  quantitative_score  DECIMAL(5,2) NOT NULL,
+  qualitative_score   DECIMAL(5,2) NOT NULL,
+  final_score         SMALLINT NOT NULL,
+  observations        TEXT,
+  submitted_at        TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Habilitar RLS e criar policies:
+ALTER TABLE scorecard_evaluations ENABLE ROW LEVEL SECURITY;
+
+-- Qualquer um pode inserir (formulário público):
+CREATE POLICY "public_insert" ON scorecard_evaluations
+  FOR INSERT WITH CHECK (true);
+
+-- Qualquer um pode ler (protegido pela senha do admin no frontend):
+CREATE POLICY "public_read" ON scorecard_evaluations
+  FOR SELECT USING (true);
+──────────────────────────────────────────────────────────── -->
+
+</body>
+</html>
